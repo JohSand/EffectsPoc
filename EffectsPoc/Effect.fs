@@ -7,23 +7,26 @@ open System.Threading.Tasks
 open Ply
 
 
-type AsyncResult<'a> = Ply<Result<'a, exn>>
+type AsyncResult<'a, 'e> = Ply<Result<'a, 'e>>
 
 [<NoEquality; NoComparison>]
-type Effect<'r, 'a> = private Eff of ('r -> AsyncResult<'a>)
+type Effect<'r, 'a, 'e> = private Eff of ('r -> AsyncResult<'a, 'e>)
 
-[<NoEquality; NoComparison>]
-type Effect2<'r, 'a, 'e> = private Eff2 of ('r -> Ply<Result<'a, 'e>>)
+//[<NoEquality; NoComparison>]
+//type Effect2<'r, 'a, 'e> = private Eff2 of ('r -> Ply<Result<'a, 'e>>)
 
 
 module Effect =
     let run env (Eff e) = e env
     
-    let run2 env (Eff2 e) = e env
+    //let run2 env (Eff2 e) = e env
     
-    let pure'<'r, 'a> (a: 'a) =
+    let pure'<'r, 'a> (a: 'a) : Effect<'r, 'a, unit>  =
         Eff(fun (_env: 'r) -> Ok a |> Ply)
-
+    
+    let pureE<'r, 'a, 'e> (a: 'a) : Effect<'r, 'a, 'e>  =
+        Eff(fun (_env: 'r) -> Ok a |> Ply)
+    
     let pureT<'r, 'a> (a: Task<'a>) =
         Eff(fun (r: 'r) ->
                 uply {
@@ -38,7 +41,7 @@ module Effect =
             return Ok a'
         }
         
-    let bind (f: 'a -> Effect<'r,'b>) (env: Effect<'r, 'a>) =
+    let bind (f: 'a -> Effect<'r,'b, 'e>) (env: Effect<'r, 'a, 'e>) =
         Eff(fun s ->
                 uply {
                     match! run s env with
@@ -46,19 +49,19 @@ module Effect =
                     | Error e -> return Error e
                 })
 
-    let bind2 (f: 'a -> Effect2<'r,'b, 'e2>) (eff: Effect2<'r, 'a, 'e1>) =
-        Eff2(fun env ->
+    let bind2 (f: 'a -> Effect<'r,'b, 'e2>) (eff: Effect<'r, 'a, 'e1>) =
+        Eff(fun env ->
                 uply {
-                    match! run2 env eff with
+                    match! run env eff with
                     | Ok a ->
-                            let! b2 = run2 env (f a)
+                            let! b2 = run env (f a)
                             return b2 |> Result.mapError (Choice2Of2)
                     | Error e -> return Error (Choice1Of2 e)
                 })
         
     let inline (>>=) m f = bind f m
 
-    let map (f: 'a -> 'b) (env: Effect<'r, 'a>) =
+    let map (f: 'a -> 'b) (env: Effect<'r, 'a, 'e>) =
         Eff(fun s ->
                 uply {
                     match! run s env with
@@ -71,9 +74,9 @@ module Effect =
         
         
 type Effect =
-    static member Create(x: ('a -> 'b), [<OptionalArgument>]_a: int) = Eff(x >> Ok >> Ply)
+    static member Create(x: ('a -> 'b), [<OptionalArgument>]_a: int) : Effect<'a, 'b, unit> = Eff(x >> Ok >> Ply)
         
-    static member Create(x: ('a -> AsyncResult<'b>)) = Eff(x)
+    static member Create(x: ('a -> AsyncResult<'b, 'e>)) = Eff(x)
 
     static member Create(x: ('a -> Result<'b, exn>)) = Eff(x >> Ply)
 
