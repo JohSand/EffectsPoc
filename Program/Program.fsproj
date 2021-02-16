@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Effects.fs" />
+        <Compile Include="EffectHelpers.fs">
+            <MyriadFile>Effects.fs</MyriadFile>
+        </Compile>
+        <Compile Include="Program.fs" />
+    </ItemGroup>
+    <ItemGroup>
+        <MyriadSdkGenerator Include="$(MSBuildThisFileDirectory)/../EffectsPoc.Myriad/bin/$(Configuration)/net5.0/EffectsPoc.Myriad.dll" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Myriad.Core" Version="0.5.0" />
+        <PackageReference Include="Myriad.Sdk" Version="0.5.0" />
+        <PackageReference Include="Myriad.Plugins" Version="0.5.0" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\EffectsPoc.Myriad\EffectsPoc.Myriad.fsproj" />
+      <ProjectReference Include="..\EffectsPoc\EffectsPoc.fsproj" />
+    </ItemGroup>
+
+</Project>
