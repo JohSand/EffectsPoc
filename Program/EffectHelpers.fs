@@ -23,6 +23,9 @@ module ConsoleService =
 
     let readLine () =
         Effect.Create(fun (env: #IConsoleServiceProvider) -> env.ConsoleService.ReadLine())
+
+    let debug () =
+        Effect.Create(fun (env: #IConsoleServiceProvider) -> env.ConsoleService.Debug())
 namespace rec Program
 
 open EffectsPoc

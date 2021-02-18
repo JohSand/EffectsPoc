@@ -1,5 +1,7 @@
 ﻿namespace Program
 
+open System
+open System.IO
 open System.Threading.Tasks
 open EffectsPoc.Myriad
 
@@ -9,8 +11,10 @@ type ILoggingService =
 
 [<Effect>]
 type IConsoleService =
-    abstract WriteLine: string -> Result<unit, exn>
-    abstract ReadLine: unit -> Result<string, exn>
+    abstract WriteLine: string -> Result<unit, IOException>
+    abstract ReadLine: unit -> Result<string, ArgumentException>
+    
+    abstract Debug: unit -> Result<string, NullReferenceException>
 
 [<Effect>]
 type IPersistenceService =

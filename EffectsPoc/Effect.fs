@@ -74,11 +74,11 @@ module Effect =
         
         
 type Effect =
-    static member Create(x: ('a -> 'b), [<OptionalArgument>]_a: int) : Effect<'a, 'b, unit> = Eff(x >> Ok >> Ply)
+    static member Create(x: ('a -> 'b), [<OptionalArgument>]_a: int) : Effect<'a, 'b, _> = Eff(x >> Ok >> Ply)
         
     static member Create(x: ('a -> AsyncResult<'b, 'e>)) = Eff(x)
 
-    static member Create(x: ('a -> Result<'b, exn>)) = Eff(x >> Ply)
+    static member Create(x: ('a -> Result<'b, #exn>)) = Eff(x >> Ply)
 
     static member Create(x: ('a -> Task<'b>)) = Eff(Effect.ply x)
     
