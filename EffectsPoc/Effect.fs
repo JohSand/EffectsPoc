@@ -1,7 +1,6 @@
 ﻿namespace EffectsPoc
 
-open System.Collections.Generic
-open FSharp.Control
+open System
 open FSharp.Control.Tasks.Affine.Unsafe
 open System.Threading.Tasks
 open Ply
@@ -10,16 +9,10 @@ open Ply
 type AsyncResult<'a, 'e> = Ply<Result<'a, 'e>>
 
 [<NoEquality; NoComparison>]
-type Effect<'r, 'a, 'e> = private Eff of ('r -> AsyncResult<'a, 'e>)
-
-//[<NoEquality; NoComparison>]
-//type Effect2<'r, 'a, 'e> = private Eff2 of ('r -> Ply<Result<'a, 'e>>)
-
+type Effect<'r, 'a, 'e> = Eff of ('r -> AsyncResult<'a, 'e>)
 
 module Effect =
     let run env (Eff e) = e env
-    
-    //let run2 env (Eff2 e) = e env
     
     let pure'<'r, 'a> (a: 'a) : Effect<'r, 'a, unit>  =
         Eff(fun (_env: 'r) -> Ok a |> Ply)
@@ -27,14 +20,6 @@ module Effect =
     let pureE<'r, 'a, 'e> (a: 'a) : Effect<'r, 'a, 'e>  =
         Eff(fun (_env: 'r) -> Ok a |> Ply)
     
-    let pureT<'r, 'a> (a: Task<'a>) =
-        Eff(fun (r: 'r) ->
-                uply {
-                    try
-                        let! a' = a
-                        return Result<'a, _>.Ok a'
-                    with e -> return Result<'a, _>.Error e
-                })
     let inline ply (x: 'a -> ^taskLike)(a: 'a) =
         uply {
             let! a' = x a
@@ -78,11 +63,6 @@ type Effect =
         
     static member Create(x: ('a -> AsyncResult<'b, 'e>)) = Eff(x)
 
-    static member Create(x: ('a -> Result<'b, #exn>)) = Eff(x >> Ply)
+    static member Create(x: ('a -> Result<'b, 'e>)) = Eff(x >> Ply)
 
-    static member Create(x: ('a -> Task<'b>)) = Eff(Effect.ply x)
-    
-    static member Create(x: ('a -> Async<'b>)) = Eff(Effect.ply x)
-    
-    static member Create(x: ('a -> ValueTask<'b>)) = Eff(Effect.ply x)
-    
+    static member inline Create(x: ('a -> ^b), [<ParamArray>]_mostGenericCase: int array) = Eff(Effect.ply x)        

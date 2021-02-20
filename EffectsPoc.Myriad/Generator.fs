@@ -8,6 +8,10 @@ open FSharp.Compiler.SyntaxTree
 open FSharp.Compiler.XmlDoc
 open Myriad.Core
 
+
+type EffectAttribute() =
+    inherit Attribute()
+    
 [<AutoOpen>]
 module GeneratorHelpers =
     type SynValSig with
@@ -177,9 +181,6 @@ module GeneratorHelpers =
         match a.ToRcd.Repr.ToRcd with
         | SynTypeDefnReprRcd.ObjectModel o -> createRecordModule a.ToRcd.Info.Id.Head o
         | SynTypeDefnReprRcd.Simple _ -> []
-
-type EffectAttribute() =
-    inherit Attribute()
 
 [<MyriadGenerator("Effect")>]
 type EffectGenerator() =

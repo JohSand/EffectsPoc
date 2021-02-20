@@ -4,7 +4,6 @@ open System
 open System.IO
 open System.Threading.Tasks
 open EffectsPoc
-open Ply
 open FSharp.Control.Tasks
 module Main =
     
@@ -46,7 +45,7 @@ module Main =
             let! c = LoggingService.log ""
             let! d = ConsoleService.debug ()
 
-            return "1"
+            return c.ToString()
         }
         
         //prove existence of implementation.
@@ -60,7 +59,7 @@ module Main =
             |> Async.RunSynchronously
         
         match res' with
-        | Ok o -> printfn "%s" o |> ignore
+        | Ok o -> printfn "%s" o 
         | Error e -> match e with
                         | Choice1Of3 io -> io |> ignore
                         | Choice2Of3 io -> io |> ignore

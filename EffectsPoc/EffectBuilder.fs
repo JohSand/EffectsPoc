@@ -1,8 +1,5 @@
 ﻿namespace EffectsPoc
 
-open System
-open System.Runtime.InteropServices
-
 [<AutoOpen>]
 module EffectBuilder =
     open Effect
@@ -14,7 +11,7 @@ module EffectBuilder =
         member __.Bind(
                         eff: Effect<'r, 'a, 'e1>,
                         f: 'a -> Effect<'r, 'b, 'e2>,
-                        [<ParamArray>]_mostGenericCase: int array) =
+                        [<System.ParamArray>]_mostGenericCase: int array) =
                         Eff(fun env ->
                                 uply {
                                     match! run env eff with
@@ -42,13 +39,14 @@ module EffectBuilder =
                                 })
                                             
         member __.Return<'r, 'a, 'e>(value: 'a) = pureE<'r, 'a, 'e> value
+               
         member __.ReturnFrom(value) = value
 
         member __.Yield(value) = pure' value
 
-        member __.Zero() = Effect.pure' ()
+        member __.Zero() = pure' ()
 
-        member __.Combine(s1: Effect<'s, unit, 'e>, s2: Effect<'s, 'a, 'e>) = Effect.map2 (fun _ -> id) s1 s2
+        member __.Combine(s1: Effect<'s, unit, 'e>, s2: Effect<'s, 'a, 'e>) = map2 (fun _ -> id) s1 s2
 
         member __.Delay(f) = f ()
 
